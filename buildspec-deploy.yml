@@ -1,0 +1,30 @@
+version: 0.2
+
+env:
+  variables:
+    AWS_REGION: ap-south-2
+    CLUSTER_NAME: brainApp-cluster
+
+phases:
+  install:
+    commands:
+      - echo Installing kubectl...
+      - curl -LO "https://dl.k8s.io/release/v1.27.0/bin/linux/amd64/kubectl"
+      - chmod +x kubectl
+      - mv kubectl /usr/local/bin/
+      - kubectl version --client
+
+  pre_build:
+    commands:
+      - echo Updating kubeconfig...
+      - aws eks --region ap-south-2 update-kubeconfig --name $CLUSTER_NAME
+
+  build:
+    commands:
+      - echo Deploying to EKS...
+      - kubectl apply -f deployment.yaml
+      - kubectl apply -f service.yaml
+
+  post_build:
+    commands:
+      - echo Deployment completed
